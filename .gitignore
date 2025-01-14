@@ -1,0 +1,13 @@
+# Ignore virtual environments
+venv/
+.env
+__pycache__/
+
+# Ignore large data files
+*.pkl
+*.html
+
+# Ignore IDE files
+.idea/
+*.iml
+ 
