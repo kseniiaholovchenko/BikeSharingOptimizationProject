@@ -1,0 +1,4 @@
+data/BikeSharingData_Berlin_combinedandcleaned.pkl filter=lfs diff=lfs merge=lfs -text
+results/kmeans_heatmap_with_usage_All_Time.html filter=lfs diff=lfs merge=lfs -text
+*.html filter=lfs diff=lfs merge=lfs -text
+*.pkl filter=lfs diff=lfs merge=lfs -text
