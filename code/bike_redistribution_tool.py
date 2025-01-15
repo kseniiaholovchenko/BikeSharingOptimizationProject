@@ -8,11 +8,10 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 
-# Paths to data
 file_path = r"C:\Users\Kseniia\Desktop\universities\BHT\Urban Technology\BikeSharingProject\data\BikeSharingData_Berlin_combinedandcleaned.pkl"
 shapefile_path = r"C:\Users\Kseniia\Desktop\universities\BHT\Urban Technology\BikeSharingProject\data\berlin_postleitzahlen\berlin_postleitzahlen.shp"
 
-# Step 1: Load the trip data
+#data
 try:
     data = pd.read_pickle(file_path)
     print("Dataset loaded successfully!")
@@ -20,10 +19,10 @@ except Exception as e:
     print(f"Error loading dataset: {e}")
     exit()
 
-# Step 2: Subset the data with 50,000 rows for analysis
+#subset the data with 50,000 rows for analysis
 subset_data = data.sample(n=50000, random_state=42)
 
-# Step 3: Load Berlin postcodes shapefile
+#Berlin postcodes shapefile
 try:
     berlin_postcodes = gpd.read_file(shapefile_path)
     print("Shapefile loaded successfully!")
@@ -31,30 +30,29 @@ except Exception as e:
     print(f"Error loading shapefile: {e}")
     exit()
 
-# Step 4: Create GeoDataFrames for start and end points
+#GeoDataFrames for start and end points
 subset_data['start_geometry'] = subset_data.apply(lambda row: Point(row['long_origin'], row['lat_origin']), axis=1)
 subset_data['end_geometry'] = subset_data.apply(lambda row: Point(row['long_destination'], row['lat_destination']), axis=1)
 
 start_gdf = gpd.GeoDataFrame(subset_data, geometry='start_geometry', crs=berlin_postcodes.crs)
 end_gdf = gpd.GeoDataFrame(subset_data, geometry='end_geometry', crs=berlin_postcodes.crs)
 
-# Step 5: Spatial join to map trips to postcodes
+#spatial join to map trips to postcodes
 start_joined = gpd.sjoin(start_gdf, berlin_postcodes, how='inner', predicate='intersects')
 end_joined = gpd.sjoin(end_gdf, berlin_postcodes, how='inner', predicate='intersects')
 
-# Aggregate trip counts by postcode
+#trip counts by postcode
 start_counts = start_joined.groupby('PLZ99').size().reset_index(name='start_count')
 end_counts = end_joined.groupby('PLZ99').size().reset_index(name='end_count')
 
-# Merge start and end counts
+#merge start and end counts
 bike_imbalance = start_counts.merge(end_counts, on='PLZ99', how='outer').fillna(0)
 bike_imbalance['imbalance'] = bike_imbalance['end_count'] - bike_imbalance['start_count']
 
-# Step 6: Merge imbalance data with Berlin postcodes for mapping
+#merge imbalance data with Berlin postcodes for mapping
 berlin_postcodes = berlin_postcodes.merge(bike_imbalance, on='PLZ99', how='left').fillna(0)
 
-# Step 7: Visualize areas with excess and deficit of bikes
-# plt.figure(figsize=(12, 8))
+#visualize areas with excess and deficit of bikes
 berlin_postcodes.plot(
     column='imbalance',
     cmap='RdYlGn',
@@ -67,11 +65,11 @@ plt.title("Bike Redistribution Map")
 plt.savefig("../results/bike_redistribution_map.png")
 plt.show()
 
-#Step 8: Save the redistribution insights
+#the redistribution insights
 # bike_imbalance.to_csv("bike_imbalance_summary.csv", index=False)
 # print("Bike redistribution insights saved to 'bike_imbalance_summary.csv'.")
 
-# Step 7: Create an HTML Heatmap with explore()
+#Heatmap with explore()
 #Red: Areas with a deficit (negative imbalance) (high numbers of pickups).
 #Green: Areas with an excess (positive imbalance) (high numbers of drop-offs).
 imbalance_map = berlin_postcodes.explore(
@@ -83,7 +81,6 @@ imbalance_map = berlin_postcodes.explore(
     style_kwds={'fillOpacity': 0.7}, # Adjust transparency
 )
 
-# Save the HTML heatmap
 imbalance_map.save("../results/bike_redistribution_heatmap.html")
 print("Bike Redistribution Heatmap saved as 'bike_redistribution_heatmap.html'")
 

@@ -1,10 +1,9 @@
 import pandas as pd  # For data manipulation and preprocessing
 import matplotlib.pyplot as plt  # For visualizing data with bar charts and plots
 
-# Path to your dataset (replace with your actual file path)
 file_path = r"C:\Users\Kseniia\Desktop\universities\BHT\Urban Technology\BikeSharingProject\data\BikeSharingData_Berlin_combinedandcleaned.pkl"
 
-# Step 1: Load the dataset
+# dataset
 try:
     data = pd.read_pickle(file_path)
     print("Dataset loaded successfully!")
@@ -13,20 +12,20 @@ except Exception as e:
     exit()
 
 #We’ll use random sampling to ensure all time periods are proportionally represented
-# Step 2: Subset the data with 50,000 rows
+#Subset the data with 50,000 rows
 subset_data = data.sample(n=50000, random_state=42)
 print(f"Subset contains {len(subset_data)} rows.")
 
-# Step 3: Extract time features
-# Convert UNIX timestamp to datetime
+#extract time features
+#convert UNIX timestamp to datetime
 subset_data['time_origin'] = pd.to_datetime(subset_data['time_origin'], unit='s')
 
-# Extract hour, day of the week, and month
+#extract hour, day of the week, and month
 subset_data['hour'] = subset_data['time_origin'].dt.hour
 subset_data['day_of_week'] = subset_data['time_origin'].dt.dayofweek  # 0 = Monday, 6 = Sunday
 subset_data['month'] = subset_data['time_origin'].dt.month
 
-# Step 4: Plot hourly demand
+#Plot hourly demand
 hourly_demand = subset_data['hour'].value_counts().sort_index()
 plt.figure(figsize=(10, 6))
 bars = plt.bar(hourly_demand.index, hourly_demand.values, color='cornflowerblue', alpha=0.7)
@@ -43,7 +42,7 @@ plt.savefig("../results/hourly_demand_plot.png", dpi=300, bbox_inches='tight')
 plt.show()
 print("Plot hourly demand")
 
-# Step 5: Plot daily demand (day of the week)
+#Plot daily demand (day of the week)
 weekly_demand = subset_data['day_of_week'].value_counts().sort_index()
 plt.figure(figsize=(8, 5))
 bars = plt.bar(weekly_demand.index, weekly_demand.values, color='#66cc66', alpha=0.7)
@@ -60,7 +59,7 @@ plt.savefig("../results/daily_demand_plot.png", dpi=300, bbox_inches='tight')
 plt.show()
 print("Plot daily demand")
 
-# Step 6: Plot monthly demand
+#Plot monthly demand
 monthly_demand = subset_data['month'].value_counts().reindex(range(1, 13), fill_value=0)
 plt.figure(figsize=(8, 5))
 bars = plt.bar(monthly_demand.index, monthly_demand.values, color='pink', alpha=0.7)
@@ -82,4 +81,3 @@ print("Plot monthly demand")
 
 print("Demand visualization completed!")
 
-#===================================================
